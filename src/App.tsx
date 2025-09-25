@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import PatientDashboard from "./pages/PatientDashboard";
+import PrakritiiAssessment from "./pages/PrakritiiAssessment";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,8 @@ const App = () => (
           <Route path="/signup" element={<Login />} />
           <Route path="/dashboard" element={<PatientDashboard />} />
           <Route path="/patient-dashboard" element={<PatientDashboard />} />
+          <Route path="/assessment" element={<PrakritiiAssessment />} />
+          <Route path="/prakriti-assessment" element={<PrakritiiAssessment />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

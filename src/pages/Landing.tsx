@@ -268,13 +268,13 @@ const Landing = () => {
               Join thousands who have discovered their path to optimal health through personalized Ayurvedic guidance.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/signup">
+              <Link to="/prakriti-assessment">
                 <Button 
                   size="lg" 
                   variant="secondary"
                   className="text-lg px-8 py-6 rounded-2xl shadow-elevated hover:shadow-wellness transition-wellness"
                 >
-                  Start Free Assessment
+                  Try Free Assessment
                 </Button>
               </Link>
               <Link to="/login">
