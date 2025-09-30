@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
+import NewAnalysisTab from "@/components/dashboard/NewAnalysisTab";
 
 // Mock data for patients
 const mockPatients = [
@@ -206,63 +207,7 @@ export default function PractitionerDashboard() {
 
           {/* New Analysis Tab */}
           <TabsContent value="analysis" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>New Patient Analysis</CardTitle>
-                <CardDescription>Start comprehensive Ayurvedic assessment for new or existing patients</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-6">
-                  <Card className="p-6 cursor-pointer hover:shadow-wellness transition-all duration-300 border-wellness-muted/20">
-                    <div className="text-center">
-                      <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-wellness-light/20 flex items-center justify-center">
-                        <UserPlus className="w-8 h-8 text-wellness" />
-                      </div>
-                      <h3 className="text-lg font-semibold mb-2">New Patient Assessment</h3>
-                      <p className="text-muted-foreground mb-4">Complete intake form and prakriti analysis for new patients</p>
-                      <Button variant="wellness" className="w-full">
-                        Start New Assessment
-                      </Button>
-                    </div>
-                  </Card>
-
-                  <Card className="p-6 cursor-pointer hover:shadow-wellness transition-all duration-300 border-wellness-muted/20">
-                    <div className="text-center">
-                      <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-wellness-light/20 flex items-center justify-center">
-                        <Users className="w-8 h-8 text-wellness" />
-                      </div>
-                      <h3 className="text-lg font-semibold mb-2">Existing Patient Review</h3>
-                      <p className="text-muted-foreground mb-4">Update assessment and modify treatment plan</p>
-                      <Button variant="outline" className="w-full">
-                        Select Patient
-                      </Button>
-                    </div>
-                  </Card>
-                </div>
-
-                <div className="bg-wellness-light/10 rounded-lg p-6">
-                  <h4 className="font-semibold mb-3">Assessment Features</h4>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-2 h-2 rounded-full bg-wellness"></div>
-                      <span className="text-sm">Comprehensive Prakriti Analysis</span>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <div className="w-2 h-2 rounded-full bg-wellness"></div>
-                      <span className="text-sm">Body Composition Assessment</span>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <div className="w-2 h-2 rounded-full bg-wellness"></div>
-                      <span className="text-sm">Digestive Fire (Agni) Evaluation</span>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <div className="w-2 h-2 rounded-full bg-wellness"></div>
-                      <span className="text-sm">Six Tastes Preference Analysis</span>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <NewAnalysisTab />
           </TabsContent>
 
           {/* Diet Plans Tab */}

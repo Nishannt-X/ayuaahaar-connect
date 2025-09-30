@@ -1,195 +1,89 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Leaf, Mail, Lock, User, Phone } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
-const Login = () => {
+export default function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
-    // Simulate login process
-    setTimeout(() => {
+
+    // Simple validation
+    if (!email || !password) {
+      toast({
+        title: "Error",
+        description: "Please fill in all fields",
+        variant: "destructive",
+      });
       setIsLoading(false);
-      // Handle login logic here
-    }, 2000);
+      return;
+    }
+
+    // Simulate login (for demo purposes)
+    setTimeout(() => {
+      toast({
+        title: "Success",
+        description: "Logged in successfully",
+      });
+      navigate("/practitioner-dashboard");
+      setIsLoading(false);
+    }, 1000);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-background via-primary-soft/20 to-accent/30">
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-8"
-        >
-          <Link to="/" className="inline-flex items-center space-x-2 group">
-            <div className="wellness-gradient p-3 rounded-xl shadow-wellness transition-wellness group-hover:shadow-elevated">
-              <Leaf className="h-8 w-8 text-primary-foreground" />
+    <div className="min-h-screen bg-gradient-to-br from-wellness-light/10 via-background to-wellness-light/5 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <div className="w-12 h-12 bg-wellness rounded-full mx-auto mb-4 flex items-center justify-center">
+            <span className="text-white font-bold text-lg">A</span>
+          </div>
+          <CardTitle className="text-2xl text-wellness">AyuAahaar</CardTitle>
+          <CardDescription>Practitioner Portal</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="doctor@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
             </div>
-            <span className="text-2xl font-bold text-foreground">AyuAahaar</span>
-          </Link>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <Card className="shadow-elevated rounded-2xl bg-card/80 backdrop-blur-sm">
-            <CardHeader className="text-center">
-              <CardTitle className="text-2xl font-bold text-foreground">
-                Welcome Back
-              </CardTitle>
-              <p className="text-muted-foreground">
-                Sign in to continue your wellness journey
-              </p>
-            </CardHeader>
-            <CardContent>
-              <Tabs defaultValue="patient" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 mb-6">
-                  <TabsTrigger value="patient">Patient</TabsTrigger>
-                  <TabsTrigger value="practitioner">Practitioner</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="patient">
-                  <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="patient-email">Email</Label>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="patient-email"
-                          type="email"
-                          placeholder="Enter your email"
-                          className="pl-10 rounded-xl"
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="patient-password">Password</Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="patient-password"
-                          type="password"
-                          placeholder="Enter your password"
-                          className="pl-10 rounded-xl"
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <Button
-                      type="submit"
-                      className="w-full wellness-gradient shadow-wellness hover:shadow-elevated transition-wellness rounded-xl"
-                      disabled={isLoading}
-                    >
-                      {isLoading ? "Signing in..." : "Sign In"}
-                    </Button>
-
-                    <div className="text-center">
-                      <Link
-                        to="/forgot-password"
-                        className="text-sm text-primary hover:text-primary/80 transition-wellness"
-                      >
-                        Forgot your password?
-                      </Link>
-                    </div>
-                  </form>
-                </TabsContent>
-
-                <TabsContent value="practitioner">
-                  <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="practitioner-email">Professional Email</Label>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="practitioner-email"
-                          type="email"
-                          placeholder="doctor@clinic.com"
-                          className="pl-10 rounded-xl"
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="practitioner-password">Password</Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="practitioner-password"
-                          type="password"
-                          placeholder="Enter your password"
-                          className="pl-10 rounded-xl"
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <Button
-                      type="submit"
-                      className="w-full wellness-gradient shadow-wellness hover:shadow-elevated transition-wellness rounded-xl"
-                      disabled={isLoading}
-                    >
-                      {isLoading ? "Signing in..." : "Access Dashboard"}
-                    </Button>
-
-                    <div className="text-center">
-                      <Link
-                        to="/practitioner-signup"
-                        className="text-sm text-primary hover:text-primary/80 transition-wellness"
-                      >
-                        Need practitioner access?
-                      </Link>
-                    </div>
-                  </form>
-                </TabsContent>
-              </Tabs>
-
-              <div className="mt-6 text-center">
-                <p className="text-sm text-muted-foreground">
-                  Don't have an account?{" "}
-                  <Link
-                    to="/signup"
-                    className="text-primary hover:text-primary/80 font-medium transition-wellness"
-                  >
-                    Sign up for free
-                  </Link>
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          className="text-center mt-6"
-        >
-          <Link
-            to="/"
-            className="text-sm text-muted-foreground hover:text-foreground transition-wellness"
-          >
-            ← Back to home
-          </Link>
-        </motion.div>
-      </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            <Button 
+              type="submit" 
+              className="w-full" 
+              disabled={isLoading}
+              variant="wellness"
+            >
+              {isLoading ? "Signing in..." : "Sign In"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
-};
-
-export default Login;
+}
