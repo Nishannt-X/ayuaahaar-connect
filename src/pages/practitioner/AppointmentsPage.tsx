@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import NewAppointmentDialog from "@/components/appointments/NewAppointmentDialog";
 import AppointmentWorkflow from "@/components/appointments/AppointmentWorkflow";
+import RescheduleDialog from "@/components/appointments/RescheduleDialog";
 
 const mockAppointments = [
   { id: 1, patient: "Priya Sharma", time: "09:00 AM", date: "2024-01-20", type: "Follow-up", status: "Confirmed" },
@@ -20,6 +21,8 @@ export default function AppointmentsPage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [workflowOpen, setWorkflowOpen] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
+  const [rescheduleOpen, setRescheduleOpen] = useState(false);
+  const [rescheduleAppointment, setRescheduleAppointment] = useState<any>(null);
 
   const todayAppointments = mockAppointments.filter(apt => apt.date === "2024-01-20");
   const upcomingAppointments = mockAppointments.filter(apt => apt.date !== "2024-01-20");
@@ -88,7 +91,16 @@ export default function AppointmentsPage() {
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Button variant="outline" size="sm">Reschedule</Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            setRescheduleAppointment(apt);
+                            setRescheduleOpen(true);
+                          }}
+                        >
+                          Reschedule
+                        </Button>
                         <Button 
                           variant="wellness" 
                           size="sm"
@@ -153,6 +165,17 @@ export default function AppointmentsPage() {
           onClose={() => {
             setWorkflowOpen(false);
             setSelectedAppointment(null);
+          }}
+        />
+      )}
+
+      {rescheduleAppointment && (
+        <RescheduleDialog
+          appointment={rescheduleAppointment}
+          open={rescheduleOpen}
+          onOpenChange={(open) => {
+            setRescheduleOpen(open);
+            if (!open) setRescheduleAppointment(null);
           }}
         />
       )}

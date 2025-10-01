@@ -176,31 +176,69 @@ export default function DietPlanBuilder({ patient, onSave, onClose }: DietPlanBu
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <Card className="lg:col-span-1 h-fit sticky top-6">
+          <CardHeader>
+            <CardTitle className="text-base">Add Foods</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+              <Input
+                placeholder="Search foods..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {selectedMeal ? `Adding to: ${MEAL_CATEGORIES.find(m => m.id === selectedMeal)?.label}` : 'Select a meal below to add foods'}
+            </p>
+            <div className="space-y-2 max-h-[400px] overflow-y-auto">
+              {filteredFoods.map((food, idx) => (
+                <div
+                  key={idx}
+                  className={`p-2 border rounded hover:border-wellness transition-colors ${selectedMeal ? 'cursor-pointer' : 'opacity-50 cursor-not-allowed'}`}
+                  onClick={() => selectedMeal && addFoodToMeal(selectedMeal, food.name)}
+                >
+                  <p className="text-sm font-medium">{food.name}</p>
+                  <div className="flex items-center justify-between mt-1">
+                    <Badge variant="outline" className="text-xs">{food.category}</Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="lg:col-span-3 space-y-3">
           {MEAL_CATEGORIES.map(meal => (
-            <Card key={meal.id}>
-              <CardHeader>
+            <Card 
+              key={meal.id} 
+              className={`transition-all ${selectedMeal === meal.id ? 'ring-2 ring-wellness' : ''}`}
+            >
+              <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-lg">{meal.label}</CardTitle>
-                    <p className="text-sm text-muted-foreground">{meal.time}</p>
+                  <div className="flex items-center space-x-3">
+                    <div>
+                      <CardTitle className="text-base">{meal.label}</CardTitle>
+                      <p className="text-xs text-muted-foreground">{meal.time}</p>
+                    </div>
                   </div>
                   <Button 
-                    variant="outline" 
+                    variant={selectedMeal === meal.id ? "wellness" : "outline"}
                     size="sm"
-                    onClick={() => setSelectedMeal(meal.id)}
+                    onClick={() => setSelectedMeal(selectedMeal === meal.id ? null : meal.id)}
                   >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Food
+                    {selectedMeal === meal.id ? "Selected" : "Select"}
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-0">
                 {dietPlan[meal.id]?.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
                     {dietPlan[meal.id].map((food, idx) => (
-                      <Badge key={idx} variant="secondary" className="px-3 py-1">
+                      <Badge key={idx} variant="secondary" className="px-2 py-1">
                         {food}
                         <button
                           onClick={() => removeFoodFromMeal(meal.id, idx)}
@@ -212,61 +250,22 @@ export default function DietPlanBuilder({ patient, onSave, onClose }: DietPlanBu
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-muted-foreground">No foods added yet</p>
+                  <p className="text-xs text-muted-foreground">Click "Select" and choose foods from the left panel</p>
                 )}
               </CardContent>
             </Card>
           ))}
-        </div>
-
-        <div className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Food Database</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                <Input
-                  placeholder="Search foods..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <div className="space-y-2 max-h-[500px] overflow-y-auto">
-                {filteredFoods.map((food, idx) => (
-                  <div
-                    key={idx}
-                    className="p-3 border rounded-lg hover:bg-wellness-light/10 transition-colors cursor-pointer"
-                    onClick={() => selectedMeal && addFoodToMeal(selectedMeal, food.name)}
-                  >
-                    <p className="font-medium">{food.name}</p>
-                    <div className="flex items-center justify-between mt-1">
-                      <Badge variant="outline" className="text-xs">{food.category}</Badge>
-                      <span className="text-xs text-muted-foreground">{food.effect}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              {selectedMeal && (
-                <p className="text-sm text-wellness font-medium">
-                  Click foods to add to {MEAL_CATEGORIES.find(m => m.id === selectedMeal)?.label}
-                </p>
-              )}
-            </CardContent>
-          </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>Dietary Notes</CardTitle>
+              <CardTitle className="text-base">Dietary Notes</CardTitle>
             </CardHeader>
             <CardContent>
               <Textarea
                 placeholder="Add special instructions, precautions, or notes..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                rows={6}
+                rows={4}
               />
             </CardContent>
           </Card>

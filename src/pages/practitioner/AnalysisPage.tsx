@@ -1,14 +1,13 @@
-import NewAnalysisTab from "@/components/dashboard/NewAnalysisTab";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function AnalysisPage() {
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">New Patient Analysis</h1>
-        <p className="text-muted-foreground">Comprehensive Ayurvedic assessment for patients</p>
-      </div>
-      
-      <NewAnalysisTab />
-    </div>
-  );
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Redirect to patients page since assessment is now part of add patient flow
+    navigate('/practitioner-dashboard/patients');
+  }, [navigate]);
+
+  return null;
 }

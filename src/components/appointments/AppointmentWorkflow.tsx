@@ -26,48 +26,19 @@ export default function AppointmentWorkflow({ patient, open, onClose }: Appointm
 
   const newPatientSteps = [
     {
-      title: "Patient Information",
+      title: "Initial Assessment",
       icon: User,
-      items: [
-        "Collect basic demographics (name, age, contact)",
-        "Record medical history",
-        "Note current medications",
-        "Document allergies",
-        "Gather family health history"
-      ]
-    },
-    {
-      title: "Prakriti Assessment",
-      icon: ClipboardList,
-      items: [
-        "Conduct body constitution questionnaire",
-        "Assess physical characteristics",
-        "Evaluate mental tendencies",
-        "Determine dominant dosha",
-        "Document current imbalances (Vikriti)"
-      ]
+      description: "Gather patient information and conduct Prakriti assessment"
     },
     {
       title: "Health Evaluation",
       icon: FileText,
-      items: [
-        "Check pulse diagnosis (Nadi Pariksha)",
-        "Examine tongue characteristics",
-        "Assess digestive fire (Agni)",
-        "Evaluate sleep quality",
-        "Review stress levels and lifestyle"
-      ]
+      description: "Perform pulse diagnosis, tongue examination, and assess digestive fire"
     },
     {
       title: "Treatment Plan",
       icon: CheckCircle2,
-      items: [
-        "Create personalized diet plan",
-        "Recommend lifestyle modifications",
-        "Prescribe herbal supplements if needed",
-        "Schedule follow-up appointment",
-        "Provide written care instructions"
-      ]
+      description: "Create personalized diet plan and lifestyle recommendations"
     }
   ];
 
@@ -75,56 +46,27 @@ export default function AppointmentWorkflow({ patient, open, onClose }: Appointm
     {
       title: "Progress Review",
       icon: ClipboardList,
-      items: [
-        "Review compliance with previous recommendations",
-        "Assess changes in symptoms",
-        "Evaluate diet adherence",
-        "Check lifestyle modifications progress",
-        "Note any challenges faced"
-      ]
+      description: "Review compliance and assess symptom changes"
     },
     {
       title: "Current Assessment",
       icon: FileText,
-      items: [
-        "Conduct pulse diagnosis",
-        "Examine tongue",
-        "Assess current dosha balance",
-        "Evaluate energy levels",
-        "Review sleep and digestion"
-      ]
+      description: "Conduct pulse diagnosis and dosha balance evaluation"
     },
     {
       title: "Plan Adjustment",
       icon: CheckCircle2,
-      items: [
-        "Modify diet plan if needed",
-        "Adjust herbal recommendations",
-        "Update lifestyle suggestions",
-        "Set new health goals",
-        "Schedule next follow-up"
-      ]
+      description: "Modify diet plan and update recommendations"
     }
   ];
 
   const steps = isNewPatient ? newPatientSteps : followUpSteps;
 
-  const handleCheckItem = (stepIndex: number, itemIndex: number) => {
-    const key = `${stepIndex}-${itemIndex}`;
-    setChecklist(prev => ({
-      ...prev,
-      [key]: !prev[key]
-    }));
+  const isStepComplete = () => {
+    return notes.trim().length > 0;
   };
 
-  const isStepComplete = (stepIndex: number) => {
-    const stepItems = steps[stepIndex].items;
-    return stepItems.every((_, itemIndex) => 
-      checklist[`${stepIndex}-${itemIndex}`]
-    );
-  };
-
-  const canProceed = isStepComplete(currentStep);
+  const canProceed = isStepComplete();
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
@@ -186,22 +128,8 @@ export default function AppointmentWorkflow({ patient, open, onClose }: Appointm
               </div>
             </div>
 
-            <div className="space-y-3">
-              {steps[currentStep].items.map((item, itemIndex) => (
-                <div key={itemIndex} className="flex items-start space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                  <Checkbox
-                    id={`${currentStep}-${itemIndex}`}
-                    checked={checklist[`${currentStep}-${itemIndex}`] || false}
-                    onCheckedChange={() => handleCheckItem(currentStep, itemIndex)}
-                  />
-                  <label
-                    htmlFor={`${currentStep}-${itemIndex}`}
-                    className="text-sm cursor-pointer flex-1"
-                  >
-                    {item}
-                  </label>
-                </div>
-              ))}
+            <div className="p-4 bg-muted/50 rounded-lg">
+              <p className="text-sm">{steps[currentStep].description}</p>
             </div>
           </Card>
 
@@ -237,7 +165,7 @@ export default function AppointmentWorkflow({ patient, open, onClose }: Appointm
 
           {!canProceed && (
             <p className="text-sm text-muted-foreground text-center">
-              Complete all items to proceed to the next step
+              Add notes to proceed to the next step
             </p>
           )}
         </div>

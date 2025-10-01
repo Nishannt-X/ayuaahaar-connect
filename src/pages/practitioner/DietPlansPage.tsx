@@ -4,6 +4,7 @@ import { Eye, FileText, Plus } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import DietPlanBuilder from "@/components/dashboard/DietPlanBuilder";
+import DietPlanView from "@/components/dashboard/DietPlanView";
 import { useToast } from "@/hooks/use-toast";
 
 const mockPatients = [
@@ -18,7 +19,19 @@ export default function DietPlansPage() {
   const initialPatient = location.state?.patient;
   
   const [selectedPatient, setSelectedPatient] = useState<any | null>(initialPatient);
-  const [view, setView] = useState<'list' | 'builder'>(initialPatient ? 'builder' : 'list');
+  const [view, setView] = useState<'list' | 'builder' | 'view'>(initialPatient ? 'builder' : 'list');
+  const [mockDietPlan] = useState({
+    meals: {
+      earlyMorning: ["Warm water with lemon"],
+      breakfast: ["Oatmeal", "Almonds", "Herbal tea"],
+      morningSnack: ["Fresh fruits"],
+      lunch: ["Kitchari", "Steamed vegetables", "Rice"],
+      eveningSnack: ["Ginger tea"],
+      dinner: ["Light soup", "Steamed greens"],
+      bedtime: ["Warm milk with turmeric"]
+    },
+    notes: "Follow dosha-balancing principles. Eat warm, cooked meals."
+  });
 
   const handleSaveDietPlan = (dietPlan: any) => {
     console.log("Diet plan saved:", dietPlan);
@@ -29,6 +42,20 @@ export default function DietPlansPage() {
     setView('list');
     setSelectedPatient(null);
   };
+
+  if (view === 'view' && selectedPatient) {
+    return (
+      <DietPlanView
+        patient={selectedPatient}
+        dietPlan={mockDietPlan}
+        onClose={() => {
+          setView('list');
+          setSelectedPatient(null);
+        }}
+        onEdit={() => setView('builder')}
+      />
+    );
+  }
 
   if (view === 'builder' && selectedPatient) {
     return (
@@ -78,7 +105,7 @@ export default function DietPlansPage() {
                       size="sm"
                       onClick={() => {
                         setSelectedPatient(patient);
-                        setView('builder');
+                        setView('view');
                       }}
                     >
                       <Eye className="w-4 h-4 mr-2" />

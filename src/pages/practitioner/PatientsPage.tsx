@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Progress } from "@/components/ui/progress";
 import { useNavigate } from "react-router-dom";
 import PatientProfileView from "@/components/dashboard/PatientProfileView";
+import AddPatientDialog from "@/components/dashboard/AddPatientDialog";
 
 const mockPatients = [
   { id: "AYU001", name: "Priya Sharma", age: 32, gender: "Female", prakriti: "Vata-Pitta", compliance: 85, lastVisit: "2024-01-15", status: "Active" },
@@ -21,6 +22,7 @@ export default function PatientsPage() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPatient, setSelectedPatient] = useState<any | null>(null);
+  const [addPatientOpen, setAddPatientOpen] = useState(false);
 
   const filteredPatients = mockPatients.filter(patient =>
     patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -46,7 +48,7 @@ export default function PatientsPage() {
           <h1 className="text-3xl font-bold">Patient Management</h1>
           <p className="text-muted-foreground">Manage your patient records and treatment plans</p>
         </div>
-        <Button variant="wellness" onClick={() => navigate('/practitioner-dashboard/analysis')}>
+        <Button variant="wellness" onClick={() => setAddPatientOpen(true)}>
           <UserPlus className="w-4 h-4 mr-2" />
           Add New Patient
         </Button>
@@ -122,6 +124,14 @@ export default function PatientsPage() {
           </Table>
         </CardContent>
       </Card>
+
+      <AddPatientDialog 
+        open={addPatientOpen} 
+        onOpenChange={setAddPatientOpen}
+        onPatientAdded={(patient) => {
+          console.log("New patient added:", patient);
+        }}
+      />
     </div>
   );
 }
