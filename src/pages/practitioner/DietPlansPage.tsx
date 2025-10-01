@@ -52,18 +52,6 @@ export default function DietPlansPage() {
         <p className="text-muted-foreground">Create, manage and customize diet plans for your patients</p>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-6">
-        <Card className="p-6 cursor-pointer hover:shadow-wellness transition-all duration-300 border-wellness/20">
-          <div className="text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-wellness-light/20 flex items-center justify-center">
-              <Plus className="w-8 h-8 text-wellness" />
-            </div>
-            <h3 className="font-semibold mb-2">Create New Plan</h3>
-            <p className="text-sm text-muted-foreground mb-4">Start fresh with a new diet plan</p>
-            <Button variant="wellness" size="sm">New Plan</Button>
-          </div>
-        </Card>
-      </div>
 
       <Card>
         <CardHeader>
@@ -85,7 +73,14 @@ export default function DietPlansPage() {
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => {
+                        setSelectedPatient(patient);
+                        setView('builder');
+                      }}
+                    >
                       <Eye className="w-4 h-4 mr-2" />
                       View
                     </Button>

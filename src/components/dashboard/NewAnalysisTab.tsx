@@ -105,36 +105,21 @@ export default function NewAnalysisTab() {
               <CardDescription>Start comprehensive Ayurvedic assessment for new or existing patients</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <Card 
-                  className="p-6 cursor-pointer hover:shadow-wellness transition-all duration-300 border-wellness-muted/20"
-                  onClick={() => setCurrentView('assessment')}
-                >
-                  <div className="text-center">
-                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-wellness-light/20 flex items-center justify-center">
-                      <UserPlus className="w-8 h-8 text-wellness" />
-                    </div>
-                    <h3 className="text-lg font-semibold mb-2">New Patient Assessment</h3>
-                    <p className="text-muted-foreground mb-4">Complete intake form and prakriti analysis for new patients</p>
-                    <Button variant="wellness" className="w-full">
-                      Start New Assessment
-                    </Button>
+              <Card 
+                className="p-6 cursor-pointer hover:shadow-wellness transition-all duration-300 border-wellness-muted/20 max-w-md mx-auto"
+                onClick={() => setCurrentView('assessment')}
+              >
+                <div className="text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-wellness-light/20 flex items-center justify-center">
+                    <UserPlus className="w-8 h-8 text-wellness" />
                   </div>
-                </Card>
-
-                <Card className="p-6 cursor-pointer hover:shadow-wellness transition-all duration-300 border-wellness-muted/20">
-                  <div className="text-center">
-                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-wellness-light/20 flex items-center justify-center">
-                      <Users className="w-8 h-8 text-wellness" />
-                    </div>
-                    <h3 className="text-lg font-semibold mb-2">Existing Patient Review</h3>
-                    <p className="text-muted-foreground mb-4">Update assessment and modify treatment plan</p>
-                    <Button variant="outline" className="w-full">
-                      Select Patient
-                    </Button>
-                  </div>
-                </Card>
-              </div>
+                  <h3 className="text-lg font-semibold mb-2">New Patient Assessment</h3>
+                  <p className="text-muted-foreground mb-4">Complete intake form and prakriti analysis for new patients</p>
+                  <Button variant="wellness" className="w-full">
+                    Start New Assessment
+                  </Button>
+                </div>
+              </Card>
 
               <div className="bg-wellness-light/10 rounded-lg p-6">
                 <h4 className="font-semibold mb-3">Assessment Features</h4>

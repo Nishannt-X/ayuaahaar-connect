@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
+import NewAppointmentDialog from "@/components/appointments/NewAppointmentDialog";
+import AppointmentWorkflow from "@/components/appointments/AppointmentWorkflow";
 
 const mockAppointments = [
   { id: 1, patient: "Priya Sharma", time: "09:00 AM", date: "2024-01-20", type: "Follow-up", status: "Confirmed" },
@@ -16,9 +18,16 @@ const mockAppointments = [
 export default function AppointmentsPage() {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [workflowOpen, setWorkflowOpen] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
 
   const todayAppointments = mockAppointments.filter(apt => apt.date === "2024-01-20");
   const upcomingAppointments = mockAppointments.filter(apt => apt.date !== "2024-01-20");
+
+  const handleStartAppointment = (appointment: any) => {
+    setSelectedAppointment(appointment);
+    setWorkflowOpen(true);
+  };
 
   return (
     <div className="space-y-6">
@@ -27,10 +36,12 @@ export default function AppointmentsPage() {
           <h1 className="text-3xl font-bold">Appointments</h1>
           <p className="text-muted-foreground">Manage your patient appointments and schedule</p>
         </div>
-        <Button variant="wellness">
-          <Plus className="w-4 h-4 mr-2" />
-          New Appointment
-        </Button>
+        <NewAppointmentDialog>
+          <Button variant="wellness">
+            <Plus className="w-4 h-4 mr-2" />
+            New Appointment
+          </Button>
+        </NewAppointmentDialog>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -78,7 +89,13 @@ export default function AppointmentsPage() {
                       </div>
                       <div className="flex items-center space-x-2">
                         <Button variant="outline" size="sm">Reschedule</Button>
-                        <Button variant="wellness" size="sm">Start</Button>
+                        <Button 
+                          variant="wellness" 
+                          size="sm"
+                          onClick={() => handleStartAppointment(apt)}
+                        >
+                          Start
+                        </Button>
                       </div>
                     </div>
                   </Card>
@@ -124,6 +141,21 @@ export default function AppointmentsPage() {
           </Card>
         </div>
       </div>
+
+      {selectedAppointment && (
+        <AppointmentWorkflow
+          patient={{
+            name: selectedAppointment.patient,
+            type: selectedAppointment.type,
+            isNewPatient: selectedAppointment.type === "Initial Consultation"
+          }}
+          open={workflowOpen}
+          onClose={() => {
+            setWorkflowOpen(false);
+            setSelectedAppointment(null);
+          }}
+        />
+      )}
     </div>
   );
 }

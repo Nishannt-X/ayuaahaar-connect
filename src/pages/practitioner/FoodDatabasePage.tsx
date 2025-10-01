@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { Search, Filter, Plus } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Search, Filter } from "lucide-react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import AddFoodDialog from "@/components/food/AddFoodDialog";
+import FoodDetailsDialog from "@/components/food/FoodDetailsDialog";
 
 const FOOD_DATABASE = [
   { name: "Rice (White)", category: "Grains", tastes: ["Sweet"], vata: "+", pitta: "=", kapha: "+", calories: 130, protein: 2.7, carbs: 28 },
@@ -44,10 +46,7 @@ export default function FoodDatabasePage() {
           <h1 className="text-3xl font-bold">Food Database</h1>
           <p className="text-muted-foreground">Comprehensive Ayurvedic food properties and nutritional information</p>
         </div>
-        <Button variant="wellness">
-          <Plus className="w-4 h-4 mr-2" />
-          Add Custom Food
-        </Button>
+        <AddFoodDialog />
       </div>
 
       <Card>
@@ -120,11 +119,10 @@ export default function FoodDatabasePage() {
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-end space-x-2">
-                      <Button variant="outline" size="sm">View Details</Button>
-                      <Button variant="wellness" size="sm">
-                        <Plus className="w-4 h-4" />
-                      </Button>
+                    <div className="flex items-center justify-end">
+                      <FoodDetailsDialog food={food}>
+                        <Button variant="outline" size="sm">View Details</Button>
+                      </FoodDetailsDialog>
                     </div>
                   </div>
                 </CardContent>
