@@ -9,6 +9,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
 import NewAnalysisTab from "@/components/dashboard/NewAnalysisTab";
+import PatientProfileView from "@/components/dashboard/PatientProfileView";
+import DietPlanBuilder from "@/components/dashboard/DietPlanBuilder";
+import { useToast } from "@/hooks/use-toast";
 
 // Mock data for patients
 const mockPatients = [
@@ -52,13 +55,93 @@ const stats = [
 ];
 
 export default function PractitionerDashboard() {
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedPatient, setSelectedPatient] = useState<string | null>(null);
+  const [selectedPatient, setSelectedPatient] = useState<any | null>(null);
+  const [currentView, setCurrentView] = useState<'dashboard' | 'profile' | 'dietBuilder'>('dashboard');
+  const [selectedTab, setSelectedTab] = useState("patients");
 
   const filteredPatients = mockPatients.filter(patient =>
     patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     patient.id.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleViewPatient = (patient: any) => {
+    setSelectedPatient(patient);
+    setCurrentView('profile');
+  };
+
+  const handleCreateDietPlan = (patient: any) => {
+    setSelectedPatient(patient);
+    setCurrentView('dietBuilder');
+  };
+
+  const handleSaveDietPlan = (dietPlan: any) => {
+    console.log("Diet plan saved:", dietPlan);
+    toast({
+      title: "Success",
+      description: "Diet plan has been saved successfully"
+    });
+    setCurrentView('dashboard');
+  };
+
+  const handleAddPatient = () => {
+    setSelectedTab("analysis");
+  };
+
+  if (currentView === 'profile' && selectedPatient) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-wellness-light/10 via-background to-wellness-light/5">
+        <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-40">
+          <div className="px-6 py-4">
+            <div className="flex items-center space-x-4">
+              <div className="w-10 h-10 rounded-full bg-wellness flex items-center justify-center">
+                <span className="text-white font-semibold">Dr</span>
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-wellness">AyuAahaar</h1>
+                <p className="text-sm text-muted-foreground">Patient Profile</p>
+              </div>
+            </div>
+          </div>
+        </header>
+        <div className="px-6 py-6">
+          <PatientProfileView
+            patient={selectedPatient}
+            onClose={() => setCurrentView('dashboard')}
+            onCreateDietPlan={handleCreateDietPlan}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  if (currentView === 'dietBuilder' && selectedPatient) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-wellness-light/10 via-background to-wellness-light/5">
+        <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-40">
+          <div className="px-6 py-4">
+            <div className="flex items-center space-x-4">
+              <div className="w-10 h-10 rounded-full bg-wellness flex items-center justify-center">
+                <span className="text-white font-semibold">Dr</span>
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-wellness">AyuAahaar</h1>
+                <p className="text-sm text-muted-foreground">Diet Plan Builder</p>
+              </div>
+            </div>
+          </div>
+        </header>
+        <div className="px-6 py-6">
+          <DietPlanBuilder
+            patient={selectedPatient}
+            onSave={handleSaveDietPlan}
+            onClose={() => setCurrentView('dashboard')}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-wellness-light/10 via-background to-wellness-light/5">
@@ -80,7 +163,7 @@ export default function PractitionerDashboard() {
                 <Settings className="w-4 h-4 mr-2" />
                 Settings
               </Button>
-              <Button variant="wellness" size="sm">
+              <Button variant="wellness" size="sm" onClick={handleAddPatient}>
                 <Plus className="w-4 h-4 mr-2" />
                 New Patient
               </Button>
@@ -118,7 +201,7 @@ export default function PractitionerDashboard() {
         </div>
 
         {/* Main Content */}
-        <Tabs defaultValue="patients" className="space-y-6">
+        <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="patients">Patients</TabsTrigger>
             <TabsTrigger value="analysis">New Analysis</TabsTrigger>
@@ -145,7 +228,7 @@ export default function PractitionerDashboard() {
                         className="pl-10 w-64"
                       />
                     </div>
-                    <Button variant="wellness">
+                    <Button variant="wellness" onClick={handleAddPatient}>
                       <UserPlus className="w-4 h-4 mr-2" />
                       Add Patient
                     </Button>
@@ -189,10 +272,18 @@ export default function PractitionerDashboard() {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center space-x-2">
-                            <Button variant="ghost" size="sm">
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => handleViewPatient(patient)}
+                            >
                               <Eye className="w-4 h-4" />
                             </Button>
-                            <Button variant="ghost" size="sm">
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => handleCreateDietPlan(patient)}
+                            >
                               <FileText className="w-4 h-4" />
                             </Button>
                           </div>
@@ -214,28 +305,36 @@ export default function PractitionerDashboard() {
           <TabsContent value="plans" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Diet Plan Management</CardTitle>
-                <CardDescription>Create, manage and customize diet plans for your patients</CardDescription>
+                <CardTitle>Recent Diet Plans</CardTitle>
+                <CardDescription>View and manage diet plans for all patients</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid md:grid-cols-3 gap-6">
-                  <Card className="p-6 cursor-pointer hover:shadow-wellness transition-all duration-300">
-                    <h3 className="font-semibold mb-2">AI-Generated Plans</h3>
-                    <p className="text-sm text-muted-foreground mb-4">Auto-generate personalized diet plans based on patient analysis</p>
-                    <Button variant="wellness" size="sm">Generate Plan</Button>
-                  </Card>
-                  
-                  <Card className="p-6 cursor-pointer hover:shadow-wellness transition-all duration-300">
-                    <h3 className="font-semibold mb-2">Custom Food Selection</h3>
-                    <p className="text-sm text-muted-foreground mb-4">Hand-pick foods from our comprehensive Ayurvedic database</p>
-                    <Button variant="outline" size="sm">Browse Foods</Button>
-                  </Card>
-                  
-                  <Card className="p-6 cursor-pointer hover:shadow-wellness transition-all duration-300">
-                    <h3 className="font-semibold mb-2">Template Library</h3>
-                    <p className="text-sm text-muted-foreground mb-4">Access pre-built templates for common conditions</p>
-                    <Button variant="outline" size="sm">View Templates</Button>
-                  </Card>
+                <div className="space-y-4">
+                  {mockPatients.map((patient) => (
+                    <Card key={patient.id} className="p-4 hover:shadow-wellness transition-all duration-300">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <div className="w-12 h-12 rounded-full bg-wellness-light/20 flex items-center justify-center">
+                            <span className="font-semibold text-wellness">{patient.name.split(' ').map(n => n[0]).join('')}</span>
+                          </div>
+                          <div>
+                            <p className="font-semibold">{patient.name}</p>
+                            <p className="text-sm text-muted-foreground">{patient.prakriti} • Last updated: {patient.lastVisit}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Button variant="outline" size="sm" onClick={() => handleViewPatient(patient)}>
+                            <Eye className="w-4 h-4 mr-2" />
+                            View
+                          </Button>
+                          <Button variant="wellness" size="sm" onClick={() => handleCreateDietPlan(patient)}>
+                            <FileText className="w-4 h-4 mr-2" />
+                            Edit Plan
+                          </Button>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
                 </div>
               </CardContent>
             </Card>
