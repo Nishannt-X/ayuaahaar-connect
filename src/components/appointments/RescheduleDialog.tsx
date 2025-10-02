@@ -36,7 +36,7 @@ export default function RescheduleDialog({ appointment, open, onOpenChange, onRe
 
     toast({
       title: "Appointment Rescheduled",
-      description: `Appointment for ${appointment.patient} has been rescheduled to ${date.toDateString()} at ${time}`
+      description: `Appointment for ${appointment.patient?.full_name || 'patient'} has been rescheduled to ${date.toDateString()} at ${time}`
     });
     
     onRescheduled?.();
@@ -49,7 +49,7 @@ export default function RescheduleDialog({ appointment, open, onOpenChange, onRe
         <DialogHeader>
           <DialogTitle>Reschedule Appointment</DialogTitle>
           <DialogDescription>
-            Reschedule appointment for {appointment?.patient}
+            Reschedule appointment for {appointment?.patient?.full_name || 'patient'}
           </DialogDescription>
         </DialogHeader>
 
