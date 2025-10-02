@@ -35,8 +35,11 @@ export default function PatientProfileView({ patient, onClose, onCreateDietPlan 
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">{patient.name}</h2>
-          <p className="text-muted-foreground">ID: {patient.id}</p>
+          <h2 className="text-2xl font-bold text-foreground">{patient.full_name || patient.name}</h2>
+          <p className="text-muted-foreground">
+            {patient.email && `${patient.email} • `}
+            {patient.phone && patient.phone}
+          </p>
         </div>
         <div className="flex items-center space-x-2">
           <Button variant="outline" onClick={onClose}>Close</Button>
@@ -58,16 +61,16 @@ export default function PatientProfileView({ patient, onClose, onCreateDietPlan 
           <CardContent className="p-6">
             <p className="text-sm text-muted-foreground mb-2">Prakriti Type</p>
             <Badge variant="outline" className="text-wellness border-wellness text-lg">
-              {patient.prakriti}
+              {patient.dominant_dosha?.toUpperCase() || 'Not Assessed'}
             </Badge>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-6">
-            <p className="text-sm text-muted-foreground mb-2">Compliance Rate</p>
-            <div className="flex items-center space-x-3">
-              <Progress value={patient.compliance} className="flex-1" />
-              <span className="text-xl font-bold">{patient.compliance}%</span>
+            <p className="text-sm text-muted-foreground mb-2">Health Metrics</p>
+            <div className="text-sm space-y-1">
+              <p>Height: {patient.height_cm || 'N/A'} cm</p>
+              <p>Weight: {patient.weight_kg || 'N/A'} kg</p>
             </div>
           </CardContent>
         </Card>
@@ -88,43 +91,36 @@ export default function PatientProfileView({ patient, onClose, onCreateDietPlan 
             </CardHeader>
             <CardContent>
               <DoshaChart 
-                vata={35} 
-                pitta={40} 
-                kapha={25} 
+                vata={patient.vata_percentage || 33} 
+                pitta={patient.pitta_percentage || 33} 
+                kapha={patient.kapha_percentage || 34} 
               />
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Key Observations</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex items-start space-x-3">
-                  <div className="w-2 h-2 rounded-full bg-wellness mt-2"></div>
-                  <div>
-                    <p className="font-medium">Agni Status</p>
-                    <p className="text-sm text-muted-foreground">Moderate digestive fire, needs stimulation</p>
-                  </div>
+          {(patient.chief_complaints || patient.medical_history) && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Medical Information</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {patient.chief_complaints && (
+                    <div>
+                      <p className="font-medium mb-2">Chief Complaints</p>
+                      <p className="text-sm text-muted-foreground">{patient.chief_complaints}</p>
+                    </div>
+                  )}
+                  {patient.medical_history && (
+                    <div>
+                      <p className="font-medium mb-2">Medical History</p>
+                      <p className="text-sm text-muted-foreground">{patient.medical_history}</p>
+                    </div>
+                  )}
                 </div>
-                <div className="flex items-start space-x-3">
-                  <div className="w-2 h-2 rounded-full bg-wellness mt-2"></div>
-                  <div>
-                    <p className="font-medium">Ama Levels</p>
-                    <p className="text-sm text-muted-foreground">Low toxin accumulation, good elimination</p>
-                  </div>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <div className="w-2 h-2 rounded-full bg-wellness mt-2"></div>
-                  <div>
-                    <p className="font-medium">Ojas Quality</p>
-                    <p className="text-sm text-muted-foreground">Medium immunity, recommend strengthening herbs</p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="history" className="space-y-4">
@@ -187,35 +183,8 @@ export default function PatientProfileView({ patient, onClose, onCreateDietPlan 
               <CardTitle>Progress Tracking</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <span className="text-sm font-medium">Diet Adherence</span>
-                    <span className="text-sm text-muted-foreground">{patient.compliance}%</span>
-                  </div>
-                  <Progress value={patient.compliance} />
-                </div>
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <span className="text-sm font-medium">Symptom Improvement</span>
-                    <span className="text-sm text-muted-foreground">75%</span>
-                  </div>
-                  <Progress value={75} />
-                </div>
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <span className="text-sm font-medium">Energy Levels</span>
-                    <span className="text-sm text-muted-foreground">68%</span>
-                  </div>
-                  <Progress value={68} />
-                </div>
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <span className="text-sm font-medium">Sleep Quality</span>
-                    <span className="text-sm text-muted-foreground">82%</span>
-                  </div>
-                  <Progress value={82} />
-                </div>
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">Progress tracking data will be available after appointments</p>
               </div>
             </CardContent>
           </Card>

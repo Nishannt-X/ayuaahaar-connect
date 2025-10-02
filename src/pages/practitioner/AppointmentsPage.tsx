@@ -29,13 +29,7 @@ export default function AppointmentsPage() {
     setLoading(true);
     const { data, error } = await supabase
       .from('appointments')
-      .select(`
-        *,
-        patient:patients!appointments_patient_id_fkey(
-          *,
-          profile:profiles!patients_profile_id_fkey(full_name)
-        )
-      `)
+      .select('*, patient:patients!appointments_patient_id_fkey(*)')
       .order('scheduled_at', { ascending: true });
 
     if (error) {
@@ -61,6 +55,8 @@ export default function AppointmentsPage() {
     const today = new Date();
     return aptDate > today && apt.status === 'scheduled';
   });
+
+  const completedAppointments = appointments.filter(apt => apt.status === 'completed');
 
   const handleStartAppointment = async (appointment: any) => {
     setSelectedAppointment(appointment);
@@ -149,7 +145,7 @@ export default function AppointmentsPage() {
                             <User className="w-6 h-6 text-wellness" />
                           </div>
                           <div>
-                            <p className="font-semibold">{apt.patient?.profile?.full_name || 'Unknown'}</p>
+                            <p className="font-semibold">{apt.patient?.full_name || 'Unknown'}</p>
                             <div className="flex items-center space-x-3 mt-1">
                               <div className="flex items-center space-x-1 text-sm text-muted-foreground">
                                 <Clock className="w-3 h-3" />
@@ -206,7 +202,7 @@ export default function AppointmentsPage() {
                             <User className="w-6 h-6 text-wellness" />
                           </div>
                           <div>
-                            <p className="font-semibold">{apt.patient?.profile?.full_name || 'Unknown'}</p>
+                            <p className="font-semibold">{apt.patient?.full_name || 'Unknown'}</p>
                             <div className="flex items-center space-x-3 mt-1">
                               <div className="flex items-center space-x-1 text-sm text-muted-foreground">
                                 <CalendarIcon className="w-3 h-3" />
@@ -228,13 +224,51 @@ export default function AppointmentsPage() {
               )}
             </CardContent>
           </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Completed Appointments</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {completedAppointments.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">No completed appointments yet</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {completedAppointments.map((apt) => (
+                    <Card key={apt.id} className="p-4 bg-muted/30">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <div className="w-12 h-12 rounded-full bg-wellness-light/20 flex items-center justify-center">
+                            <User className="w-6 h-6 text-wellness" />
+                          </div>
+                          <div>
+                            <p className="font-semibold">{apt.patient?.full_name || 'Unknown'}</p>
+                            <div className="flex items-center space-x-3 mt-1">
+                              <div className="flex items-center space-x-1 text-sm text-muted-foreground">
+                                <CalendarIcon className="w-3 h-3" />
+                                <span>{format(new Date(apt.scheduled_at), 'MMM dd, yyyy')}</span>
+                              </div>
+                              <Badge variant="outline">{apt.title}</Badge>
+                              <Badge variant="secondary">Completed</Badge>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
 
       {selectedAppointment && (
         <AppointmentWorkflow
           patient={{
-            name: selectedAppointment.patient?.profile?.full_name || 'Unknown',
+            name: selectedAppointment.patient?.full_name || 'Unknown',
             type: selectedAppointment.title,
             isNewPatient: selectedAppointment.title.includes("Initial")
           }}

@@ -29,10 +29,7 @@ export default function PatientsPage() {
     setLoading(true);
     const { data, error } = await supabase
       .from('patients')
-      .select(`
-        *,
-        profile:profiles!patients_profile_id_fkey(full_name, email)
-      `)
+      .select('*')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -48,7 +45,8 @@ export default function PatientsPage() {
   };
 
   const filteredPatients = patients.filter(patient =>
-    patient.profile?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    patient.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    patient.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     patient.id.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -115,12 +113,12 @@ export default function PatientsPage() {
               <TableBody>
                 {filteredPatients.map((patient) => (
                   <TableRow key={patient.id} className="hover:bg-wellness-light/5">
-                    <TableCell className="font-medium">{patient.profile?.full_name || 'N/A'}</TableCell>
+                    <TableCell className="font-medium">{patient.full_name || 'N/A'}</TableCell>
                     <TableCell>{patient.age || 'N/A'}Y, {patient.gender || 'N/A'}</TableCell>
                     <TableCell>
                       {patient.dominant_dosha ? (
                         <Badge variant="outline" className="text-wellness border-wellness">
-                          {patient.dominant_dosha}
+                          {patient.dominant_dosha?.toUpperCase()}
                         </Badge>
                       ) : (
                         <span className="text-muted-foreground text-sm">Not assessed</span>

@@ -29,28 +29,14 @@ export default function AddPatientDialog({ open, onOpenChange, onPatientAdded }:
     setIsLoading(true);
     
     try {
-      // Create a patient profile first
-      const { data: profileData, error: profileError } = await supabase.auth.signUp({
-        email: data.email,
-        password: Math.random().toString(36).slice(-12), // Generate random password
-        options: {
-          data: {
-            full_name: data.name,
-            role: 'patient'
-          }
-        }
-      });
-
-      if (profileError) throw profileError;
-
-      if (!profileData.user) throw new Error("Failed to create patient profile");
-
-      // Create patient record
-      const { error: patientError } = await supabase
+      // Create patient record directly without auth signup
+      const { data: patientData, error: patientError } = await supabase
         .from('patients')
         .insert({
-          profile_id: profileData.user.id,
           practitioner_id: user.id,
+          full_name: data.name,
+          email: data.email || null,
+          phone: data.phone || null,
           age: parseInt(data.age) || null,
           gender: data.gender || null,
           height_cm: parseFloat(data.height) || null,
@@ -61,7 +47,9 @@ export default function AddPatientDialog({ open, onOpenChange, onPatientAdded }:
           vata_percentage: parseInt(data.vata) || null,
           pitta_percentage: parseInt(data.pitta) || null,
           kapha_percentage: parseInt(data.kapha) || null,
-        });
+        })
+        .select()
+        .single();
 
       if (patientError) throw patientError;
       
@@ -71,7 +59,7 @@ export default function AddPatientDialog({ open, onOpenChange, onPatientAdded }:
       });
       
       setIsLoading(false);
-      onPatientAdded?.(profileData.user);
+      onPatientAdded?.(patientData);
       onOpenChange(false);
     } catch (error: any) {
       toast({

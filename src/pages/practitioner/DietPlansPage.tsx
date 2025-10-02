@@ -31,13 +31,7 @@ export default function DietPlansPage() {
     setLoading(true);
     const { data, error } = await supabase
       .from('diet_plans')
-      .select(`
-        *,
-        patient:patients!diet_plans_patient_id_fkey(
-          *,
-          profile:profiles!patients_profile_id_fkey(full_name, email)
-        )
-      `)
+      .select('*, patient:patients!diet_plans_patient_id_fkey(*)')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -140,11 +134,11 @@ export default function DietPlansPage() {
                     <div className="flex items-center space-x-4">
                       <div className="w-12 h-12 rounded-full bg-wellness-light/20 flex items-center justify-center">
                         <span className="font-semibold text-wellness">
-                          {plan.patient?.profile?.full_name?.split(' ').map((n: string) => n[0]).join('') || 'N/A'}
+                          {plan.patient?.full_name?.split(' ').map((n: string) => n[0]).join('') || 'N/A'}
                         </span>
                       </div>
                       <div>
-                        <p className="font-semibold">{plan.patient?.profile?.full_name || 'Unknown'}</p>
+                        <p className="font-semibold">{plan.patient?.full_name || 'Unknown'}</p>
                         <p className="text-sm text-muted-foreground">
                           {plan.plan_name} • Duration: {plan.duration_days} days
                         </p>

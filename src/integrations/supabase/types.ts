@@ -278,14 +278,17 @@ export type Database = {
           chief_complaints: string | null
           created_at: string
           dominant_dosha: Database["public"]["Enums"]["dosha_type"] | null
+          email: string | null
+          full_name: string | null
           gender: string | null
           height_cm: number | null
           id: string
           kapha_percentage: number | null
           medical_history: string | null
+          phone: string | null
           pitta_percentage: number | null
           practitioner_id: string
-          profile_id: string
+          profile_id: string | null
           updated_at: string
           vata_percentage: number | null
           weight_kg: number | null
@@ -295,14 +298,17 @@ export type Database = {
           chief_complaints?: string | null
           created_at?: string
           dominant_dosha?: Database["public"]["Enums"]["dosha_type"] | null
+          email?: string | null
+          full_name?: string | null
           gender?: string | null
           height_cm?: number | null
           id?: string
           kapha_percentage?: number | null
           medical_history?: string | null
+          phone?: string | null
           pitta_percentage?: number | null
           practitioner_id: string
-          profile_id: string
+          profile_id?: string | null
           updated_at?: string
           vata_percentage?: number | null
           weight_kg?: number | null
@@ -312,14 +318,17 @@ export type Database = {
           chief_complaints?: string | null
           created_at?: string
           dominant_dosha?: Database["public"]["Enums"]["dosha_type"] | null
+          email?: string | null
+          full_name?: string | null
           gender?: string | null
           height_cm?: number | null
           id?: string
           kapha_percentage?: number | null
           medical_history?: string | null
+          phone?: string | null
           pitta_percentage?: number | null
           practitioner_id?: string
-          profile_id?: string
+          profile_id?: string | null
           updated_at?: string
           vata_percentage?: number | null
           weight_kg?: number | null
@@ -376,7 +385,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_practitioner: {
+        Args: { user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       appointment_status: "scheduled" | "completed" | "cancelled"
