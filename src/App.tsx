@@ -9,7 +9,6 @@ import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import DashboardHome from "./pages/practitioner/DashboardHome";
 import PatientsPage from "./pages/practitioner/PatientsPage";
-import AnalysisPage from "./pages/practitioner/AnalysisPage";
 import DietPlansPage from "./pages/practitioner/DietPlansPage";
 import FoodDatabasePage from "./pages/practitioner/FoodDatabasePage";
 import AppointmentsPage from "./pages/practitioner/AppointmentsPage";
@@ -40,7 +39,6 @@ const App = () => (
                     <Routes>
                       <Route index element={<DashboardHome />} />
                       <Route path="patients" element={<PatientsPage />} />
-                      <Route path="analysis" element={<AnalysisPage />} />
                       <Route path="diet-plans" element={<DietPlansPage />} />
                       <Route path="food-database" element={<FoodDatabasePage />} />
                       <Route path="appointments" element={<AppointmentsPage />} />

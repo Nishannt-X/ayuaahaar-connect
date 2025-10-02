@@ -16,7 +16,6 @@ import {
 const mainNavItems = [
   { title: "Dashboard", url: "/practitioner-dashboard", icon: Home },
   { title: "Patients", url: "/practitioner-dashboard/patients", icon: Users },
-  { title: "New Analysis", url: "/practitioner-dashboard/analysis", icon: FileText },
   { title: "Diet Plans", url: "/practitioner-dashboard/diet-plans", icon: BookTemplate },
   { title: "Food Database", url: "/practitioner-dashboard/food-database", icon: Database },
   { title: "Appointments", url: "/practitioner-dashboard/appointments", icon: Calendar },
