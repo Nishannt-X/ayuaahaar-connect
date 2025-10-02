@@ -10,7 +10,6 @@ interface RescheduleDialogProps {
   appointment: any;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onRescheduled?: () => void;
 }
 
 const TIME_SLOTS = [
@@ -19,7 +18,7 @@ const TIME_SLOTS = [
   "04:00 PM", "04:30 PM", "05:00 PM"
 ];
 
-export default function RescheduleDialog({ appointment, open, onOpenChange, onRescheduled }: RescheduleDialogProps) {
+export default function RescheduleDialog({ appointment, open, onOpenChange }: RescheduleDialogProps) {
   const { toast } = useToast();
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [time, setTime] = useState<string>("");
@@ -38,8 +37,6 @@ export default function RescheduleDialog({ appointment, open, onOpenChange, onRe
       title: "Appointment Rescheduled",
       description: `Appointment for ${appointment.patient} has been rescheduled to ${date.toDateString()} at ${time}`
     });
-    
-    onRescheduled?.();
     onOpenChange(false);
   };
 

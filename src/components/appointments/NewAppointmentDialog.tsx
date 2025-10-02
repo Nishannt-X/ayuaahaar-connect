@@ -16,12 +16,7 @@ const timeSlots = [
   "02:00 PM", "02:30 PM", "03:00 PM", "03:30 PM", "04:00 PM", "04:30 PM"
 ];
 
-interface NewAppointmentDialogProps {
-  children: React.ReactNode;
-  onAppointmentCreated?: () => void;
-}
-
-export default function NewAppointmentDialog({ children, onAppointmentCreated }: NewAppointmentDialogProps) {
+export default function NewAppointmentDialog({ children }: { children: React.ReactNode }) {
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState<Date>();
@@ -49,8 +44,6 @@ export default function NewAppointmentDialog({ children, onAppointmentCreated }:
       title: "Appointment scheduled",
       description: `Appointment for ${formData.patientName} on ${format(date, "PPP")} at ${formData.time}`
     });
-
-    onAppointmentCreated?.();
 
     // Reset form
     setFormData({

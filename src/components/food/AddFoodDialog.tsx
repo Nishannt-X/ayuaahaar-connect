@@ -7,28 +7,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Plus, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 
-const categories = ["Grains", "Vegetables", "Fruits", "Legumes", "Nuts", "Spices", "Fats", "Sweeteners"];
+const categories = ["Grains", "Vegetables", "Fruits", "Legumes", "Nuts & Seeds", "Spices", "Fats & Oils", "Main Dishes"];
 const tastes = ["Sweet", "Sour", "Salty", "Pungent", "Bitter", "Astringent"];
-const doshaEffects = ["Increases", "Decreases", "Balancing"];
+const doshaEffects = ["+", "-", "="];
 
-export default function AddFoodDialog({ onFoodAdded }: { onFoodAdded?: () => void }) {
+export default function AddFoodDialog() {
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     category: "",
     selectedTastes: [] as string[],
-    vata: "Balancing",
-    pitta: "Balancing",
-    kapha: "Balancing",
+    vata: "=",
+    pitta: "=",
+    kapha: "=",
     calories: "",
     protein: "",
-    carbs: "",
-    fat: "",
-    fiber: ""
+    carbs: ""
   });
 
   const toggleTaste = (taste: string) => {
@@ -40,7 +36,7 @@ export default function AddFoodDialog({ onFoodAdded }: { onFoodAdded?: () => voi
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.name || !formData.category || formData.selectedTastes.length === 0) {
@@ -52,58 +48,24 @@ export default function AddFoodDialog({ onFoodAdded }: { onFoodAdded?: () => voi
       return;
     }
 
-    setLoading(true);
-
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    const { error } = await supabase.from('food_items').insert({
-      name: formData.name,
-      category: formData.category,
-      vata_effect: formData.vata,
-      pitta_effect: formData.pitta,
-      kapha_effect: formData.kapha,
-      taste: formData.selectedTastes,
-      calories_per_100g: parseInt(formData.calories) || null,
-      protein_g: parseFloat(formData.protein) || null,
-      carbs_g: parseFloat(formData.carbs) || null,
-      fat_g: parseFloat(formData.fat) || null,
-      fiber_g: parseFloat(formData.fiber) || null,
-      added_by: user?.id || null,
-      is_custom: true
+    toast({
+      title: "Food added successfully",
+      description: `${formData.name} has been added to the database`
     });
 
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to add food item",
-        variant: "destructive"
-      });
-    } else {
-      toast({
-        title: "Food added successfully",
-        description: `${formData.name} has been added to the database`
-      });
-
-      // Reset form
-      setFormData({
-        name: "",
-        category: "",
-        selectedTastes: [],
-        vata: "Balancing",
-        pitta: "Balancing",
-        kapha: "Balancing",
-        calories: "",
-        protein: "",
-        carbs: "",
-        fat: "",
-        fiber: ""
-      });
-      
-      onFoodAdded?.();
-      setOpen(false);
-    }
-    
-    setLoading(false);
+    // Reset form
+    setFormData({
+      name: "",
+      category: "",
+      selectedTastes: [],
+      vata: "=",
+      pitta: "=",
+      kapha: "=",
+      calories: "",
+      protein: "",
+      carbs: ""
+    });
+    setOpen(false);
   };
 
   return (
@@ -247,8 +209,8 @@ export default function AddFoodDialog({ onFoodAdded }: { onFoodAdded?: () => voi
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" variant="wellness" disabled={loading}>
-              {loading ? "Adding..." : "Add Food"}
+            <Button type="submit" variant="wellness">
+              Add Food
             </Button>
           </div>
         </form>
