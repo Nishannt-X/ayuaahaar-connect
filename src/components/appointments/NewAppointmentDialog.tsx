@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 const appointmentTypes = ["Initial Consultation", "Follow-up", "Diet Review", "Lifestyle Counseling"];
 const timeSlots = [
@@ -23,20 +25,42 @@ interface NewAppointmentDialogProps {
 
 export default function NewAppointmentDialog({ children, onAppointmentCreated }: NewAppointmentDialogProps) {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState<Date>();
+  const [patients, setPatients] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
-    patientName: "",
-    contact: "",
+    patientId: "",
     type: "",
     time: "",
     notes: ""
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (open && user) {
+      fetchPatients();
+    }
+  }, [open, user]);
+
+  const fetchPatients = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('patients')
+      .select('*')
+      .eq('practitioner_id', user?.id)
+      .order('full_name', { ascending: true });
+
+    if (!error && data) {
+      setPatients(data);
+    }
+    setLoading(false);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.patientName || !formData.type || !date || !formData.time) {
+    if (!formData.patientId || !formData.type || !date || !formData.time || !user) {
       toast({
         title: "Incomplete form",
         description: "Please fill in all required fields",
@@ -45,23 +69,50 @@ export default function NewAppointmentDialog({ children, onAppointmentCreated }:
       return;
     }
 
-    toast({
-      title: "Appointment scheduled",
-      description: `Appointment for ${formData.patientName} on ${format(date, "PPP")} at ${formData.time}`
+    const selectedPatient = patients.find(p => p.id === formData.patientId);
+    const [hours, minutes] = formData.time.split(/[: ]/);
+    const isPM = formData.time.includes('PM');
+    let hour = parseInt(hours);
+    if (isPM && hour !== 12) hour += 12;
+    if (!isPM && hour === 12) hour = 0;
+    
+    const scheduledDateTime = new Date(date);
+    scheduledDateTime.setHours(hour, parseInt(minutes.replace(/[^\d]/g, '')), 0, 0);
+
+    const { error } = await supabase.from('appointments').insert({
+      patient_id: formData.patientId,
+      practitioner_id: user.id,
+      scheduled_at: scheduledDateTime.toISOString(),
+      title: formData.type,
+      duration_minutes: 60,
+      status: 'scheduled',
+      notes: formData.notes || null,
     });
 
-    onAppointmentCreated?.();
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create appointment",
+        variant: "destructive"
+      });
+    } else {
+      toast({
+        title: "Appointment scheduled",
+        description: `Appointment for ${selectedPatient?.full_name} on ${format(date, "PPP")} at ${formData.time}`
+      });
 
-    // Reset form
-    setFormData({
-      patientName: "",
-      contact: "",
-      type: "",
-      time: "",
-      notes: ""
-    });
-    setDate(undefined);
-    setOpen(false);
+      onAppointmentCreated?.();
+
+      // Reset form
+      setFormData({
+        patientId: "",
+        type: "",
+        time: "",
+        notes: ""
+      });
+      setDate(undefined);
+      setOpen(false);
+    }
   };
 
   return (
@@ -79,23 +130,19 @@ export default function NewAppointmentDialog({ children, onAppointmentCreated }:
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="patientName">Patient Name *</Label>
-            <Input
-              id="patientName"
-              value={formData.patientName}
-              onChange={(e) => setFormData({...formData, patientName: e.target.value})}
-              placeholder="Enter patient name"
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="contact">Contact Number</Label>
-            <Input
-              id="contact"
-              value={formData.contact}
-              onChange={(e) => setFormData({...formData, contact: e.target.value})}
-              placeholder="Enter contact number"
-            />
+            <Label htmlFor="patientId">Select Patient *</Label>
+            <Select value={formData.patientId} onValueChange={(value) => setFormData({...formData, patientId: value})}>
+              <SelectTrigger>
+                <SelectValue placeholder={loading ? "Loading patients..." : "Select a patient"} />
+              </SelectTrigger>
+              <SelectContent>
+                {patients.map(patient => (
+                  <SelectItem key={patient.id} value={patient.id}>
+                    {patient.full_name} {patient.email && `(${patient.email})`}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div>

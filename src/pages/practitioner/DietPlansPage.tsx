@@ -49,29 +49,62 @@ export default function DietPlansPage() {
   const handleSaveDietPlan = async (dietPlan: any) => {
     if (!selectedPatient?.id || !user) return;
 
-    const { error } = await supabase.from('diet_plans').insert({
-      patient_id: selectedPatient.id,
-      practitioner_id: user.id,
-      plan_name: dietPlan.planName || "Custom Diet Plan",
-      duration_days: dietPlan.duration || 30,
-      goals: dietPlan.goals || null,
-      notes: dietPlan.notes || null,
-    });
+    // Check if we're editing an existing plan
+    if (selectedDietPlan?.id) {
+      // Update existing plan
+      const { error } = await supabase
+        .from('diet_plans')
+        .update({
+          plan_name: dietPlan.planName || "Custom Diet Plan",
+          duration_days: dietPlan.duration || 30,
+          goals: dietPlan.goals || null,
+          notes: dietPlan.notes || null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', selectedDietPlan.id);
 
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to save diet plan",
-        variant: "destructive",
-      });
+      if (error) {
+        toast({
+          title: "Error",
+          description: "Failed to update diet plan",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: "Diet plan has been updated successfully"
+        });
+        fetchDietPlans();
+        setView('list');
+        setSelectedPatient(null);
+        setSelectedDietPlan(null);
+      }
     } else {
-      toast({
-        title: "Success",
-        description: "Diet plan has been saved successfully"
+      // Create new plan
+      const { error } = await supabase.from('diet_plans').insert({
+        patient_id: selectedPatient.id,
+        practitioner_id: user.id,
+        plan_name: dietPlan.planName || "Custom Diet Plan",
+        duration_days: dietPlan.duration || 30,
+        goals: dietPlan.goals || null,
+        notes: dietPlan.notes || null,
       });
-      fetchDietPlans();
-      setView('list');
-      setSelectedPatient(null);
+
+      if (error) {
+        toast({
+          title: "Error",
+          description: "Failed to save diet plan",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: "Diet plan has been saved successfully"
+        });
+        fetchDietPlans();
+        setView('list');
+        setSelectedPatient(null);
+      }
     }
   };
 
@@ -95,10 +128,12 @@ export default function DietPlansPage() {
       <div className="space-y-6">
         <DietPlanBuilder
           patient={selectedPatient}
+          existingPlan={selectedDietPlan}
           onSave={handleSaveDietPlan}
           onClose={() => {
             setView('list');
             setSelectedPatient(null);
+            setSelectedDietPlan(null);
           }}
         />
       </div>
@@ -162,6 +197,7 @@ export default function DietPlansPage() {
                         size="sm"
                         onClick={() => {
                           setSelectedPatient(plan.patient);
+                          setSelectedDietPlan(plan);
                           setView('builder');
                         }}
                       >

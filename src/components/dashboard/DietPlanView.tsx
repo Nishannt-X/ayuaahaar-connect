@@ -25,8 +25,8 @@ export default function DietPlanView({ patient, dietPlan, onClose, onEdit }: Die
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Diet Plan - {patient.name}</h2>
-          <p className="text-muted-foreground">Prakriti: {patient.prakriti}</p>
+          <h2 className="text-2xl font-bold">Diet Plan - {patient.full_name || patient.name}</h2>
+          <p className="text-muted-foreground">Prakriti: {patient.dominant_dosha || patient.prakriti || 'Not assessed'}</p>
         </div>
         <div className="flex items-center space-x-2">
           {onEdit && (

@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 
 interface DietPlanBuilderProps {
   patient: any;
+  existingPlan?: any;
   onSave: (dietPlan: any) => void;
   onClose: () => void;
 }
@@ -36,13 +37,13 @@ const SAMPLE_FOODS = [
   { name: "Rice", category: "Grain", tastes: ["Sweet"], effect: "Grounding" }
 ];
 
-export default function DietPlanBuilder({ patient, onSave, onClose }: DietPlanBuilderProps) {
+export default function DietPlanBuilder({ patient, existingPlan, onSave, onClose }: DietPlanBuilderProps) {
   const { toast } = useToast();
-  const [dietPlan, setDietPlan] = useState<Record<string, string[]>>({});
+  const [dietPlan, setDietPlan] = useState<Record<string, string[]>>(existingPlan?.meals || {});
   const [selectedMeal, setSelectedMeal] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [notes, setNotes] = useState("");
-  const [uploadedPhoto, setUploadedPhoto] = useState<string | null>(null);
+  const [notes, setNotes] = useState(existingPlan?.notes || "");
+  const [uploadedPhoto, setUploadedPhoto] = useState<string | null>(existingPlan?.photo || null);
 
   const addFoodToMeal = (mealId: string, foodName: string) => {
     setDietPlan(prev => ({
@@ -118,8 +119,8 @@ export default function DietPlanBuilder({ patient, onSave, onClose }: DietPlanBu
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Create Diet Plan</h2>
-          <p className="text-muted-foreground">For {patient.name} ({patient.prakriti})</p>
+          <h2 className="text-2xl font-bold">{existingPlan ? 'Edit' : 'Create'} Diet Plan</h2>
+          <p className="text-muted-foreground">For {patient.full_name || patient.name} ({patient.dominant_dosha || patient.prakriti || 'Not assessed'})</p>
         </div>
         <div className="flex items-center space-x-2">
           <Button variant="outline" onClick={generateAIDietPlan}>
