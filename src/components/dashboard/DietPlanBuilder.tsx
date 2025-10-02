@@ -74,7 +74,7 @@ export default function DietPlanBuilder({ patient, existingPlan, onSave, onClose
         mealsMap[meal.meal_type] = [];
       }
       if (Array.isArray(meal.food_items)) {
-        mealsMap[meal.meal_type].push(...meal.food_items);
+        mealsMap[meal.meal_type].push(...(meal.food_items as string[]));
       }
     });
 

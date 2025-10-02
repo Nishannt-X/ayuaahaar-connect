@@ -114,7 +114,7 @@ export default function DietPlansPage() {
           diet_plan_id: planId,
           meal_type: mealType,
           day_number: 1,
-          food_items: foods,
+          food_items: foods as string[],
         }));
 
         const { error: mealsError } = await supabase
