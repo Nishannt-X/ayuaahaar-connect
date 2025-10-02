@@ -1,5 +1,6 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { Users, FileText, BarChart3, Calendar, Database, BookTemplate, Settings, LogOut, Home } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Sidebar,
   SidebarContent,
@@ -29,6 +30,13 @@ const bottomNavItems = [
 export function PractitionerSidebar() {
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/login');
+  };
 
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
     isActive 
@@ -85,11 +93,9 @@ export function PractitionerSidebar() {
                   </SidebarMenuItem>
                 ))}
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <NavLink to="/login" className="hover:bg-destructive/5 hover:text-destructive">
-                      <LogOut className="h-5 w-5" />
-                      {!isCollapsed && <span>Logout</span>}
-                    </NavLink>
+                  <SidebarMenuButton onClick={handleLogout} className="hover:bg-destructive/5 hover:text-destructive cursor-pointer">
+                    <LogOut className="h-5 w-5" />
+                    {!isCollapsed && <span>Logout</span>}
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               </SidebarMenu>
