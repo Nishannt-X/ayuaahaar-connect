@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Filter } from "lucide-react";
+import { Search, Filter, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -52,6 +52,33 @@ export default function FoodDatabasePage() {
     if (effect.toLowerCase().includes("increase")) return "text-red-500";
     if (effect.toLowerCase().includes("decrease")) return "text-green-500";
     return "text-muted-foreground";
+  };
+
+  const handleDeleteFood = async (foodId: string) => {
+    if (!confirm('Are you sure you want to delete this food item?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('food_items')
+        .delete()
+        .eq('id', foodId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Food item deleted successfully"
+      });
+      
+      fetchFoods();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete food item",
+        variant: "destructive",
+      });
+      console.error('Error deleting food:', error);
+    }
   };
 
   return (
@@ -149,10 +176,18 @@ export default function FoodDatabasePage() {
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-end">
+                      <div className="flex items-center justify-end space-x-2">
                         <FoodDetailsDialog food={food}>
                           <Button variant="outline" size="sm">View Details</Button>
                         </FoodDetailsDialog>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleDeleteFood(food.id)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       </div>
                     </div>
                   </CardContent>

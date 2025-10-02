@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Calendar as CalendarIcon, Clock, Plus, User } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, Plus, User, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -91,6 +91,33 @@ export default function AppointmentsPage() {
     }
   };
 
+  const handleDeleteAppointment = async (appointmentId: string) => {
+    if (!confirm('Are you sure you want to delete this appointment?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('appointments')
+        .delete()
+        .eq('id', appointmentId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Appointment deleted successfully"
+      });
+      
+      fetchAppointments();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete appointment",
+        variant: "destructive",
+      });
+      console.error('Error deleting appointment:', error);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -174,6 +201,14 @@ export default function AppointmentsPage() {
                           >
                             Start
                           </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => handleDeleteAppointment(apt.id)}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
                         </div>
                       </div>
                     </Card>
@@ -216,7 +251,17 @@ export default function AppointmentsPage() {
                             </div>
                           </div>
                         </div>
-                        <Button variant="outline" size="sm">View Details</Button>
+                        <div className="flex items-center space-x-2">
+                          <Button variant="outline" size="sm">View Details</Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => handleDeleteAppointment(apt.id)}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
                     </Card>
                   ))}

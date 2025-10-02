@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { Eye, FileText } from "lucide-react";
+import { Eye, FileText, Trash2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import DietPlanBuilder from "@/components/dashboard/DietPlanBuilder";
@@ -60,6 +60,40 @@ export default function DietPlansPage() {
       setDietPlans(plansWithMeals || []);
     }
     setLoading(false);
+  };
+
+  const handleDeleteDietPlan = async (planId: string) => {
+    if (!confirm('Are you sure you want to delete this diet plan?')) return;
+
+    try {
+      // Delete meals first (foreign key constraint)
+      await supabase
+        .from('diet_plan_meals')
+        .delete()
+        .eq('diet_plan_id', planId);
+
+      // Delete the plan
+      const { error } = await supabase
+        .from('diet_plans')
+        .delete()
+        .eq('id', planId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Diet plan deleted successfully"
+      });
+      
+      fetchDietPlans();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete diet plan",
+        variant: "destructive",
+      });
+      console.error('Error deleting diet plan:', error);
+    }
   };
 
   const handleSaveDietPlan = async (dietPlan: any) => {
@@ -238,6 +272,13 @@ export default function DietPlansPage() {
                       >
                         <FileText className="w-4 h-4 mr-2" />
                         Edit Plan
+                      </Button>
+                      <Button 
+                        variant="destructive" 
+                        size="sm"
+                        onClick={() => handleDeleteDietPlan(plan.id)}
+                      >
+                        <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
                   </div>

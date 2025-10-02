@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, UserPlus, Eye, FileText } from "lucide-react";
+import { Search, UserPlus, Eye, FileText, Trash2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,6 +42,33 @@ export default function PatientsPage() {
       setPatients(data || []);
     }
     setLoading(false);
+  };
+
+  const handleDeletePatient = async (patientId: string) => {
+    if (!confirm('Are you sure you want to delete this patient? This will also delete all related appointments and diet plans.')) return;
+
+    try {
+      const { error } = await supabase
+        .from('patients')
+        .delete()
+        .eq('id', patientId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Patient deleted successfully"
+      });
+      
+      fetchPatients();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete patient",
+        variant: "destructive",
+      });
+      console.error('Error deleting patient:', error);
+    }
   };
 
   const filteredPatients = patients.filter(patient =>
@@ -138,6 +165,14 @@ export default function PatientsPage() {
                           onClick={() => navigate('/practitioner-dashboard/diet-plans', { state: { patient } })}
                         >
                           <FileText className="w-4 h-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleDeletePatient(patient.id)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
                     </TableCell>
