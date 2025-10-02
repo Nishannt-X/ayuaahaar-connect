@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, Filter } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,35 +7,50 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AddFoodDialog from "@/components/food/AddFoodDialog";
 import FoodDetailsDialog from "@/components/food/FoodDetailsDialog";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
-const FOOD_DATABASE = [
-  { name: "Rice (White)", category: "Grains", tastes: ["Sweet"], vata: "+", pitta: "=", kapha: "+", calories: 130, protein: 2.7, carbs: 28 },
-  { name: "Kitchari", category: "Main Dishes", tastes: ["Sweet", "Astringent"], vata: "=", pitta: "=", kapha: "=", calories: 180, protein: 8, carbs: 32 },
-  { name: "Ghee", category: "Fats & Oils", tastes: ["Sweet"], vata: "-", pitta: "-", kapha: "+", calories: 120, protein: 0, carbs: 0 },
-  { name: "Almonds", category: "Nuts & Seeds", tastes: ["Sweet"], vata: "-", pitta: "=", kapha: "+", calories: 160, protein: 6, carbs: 6 },
-  { name: "Ginger", category: "Spices", tastes: ["Pungent", "Sweet"], vata: "-", pitta: "+", kapha: "-", calories: 5, protein: 0.2, carbs: 1 },
-  { name: "Turmeric", category: "Spices", tastes: ["Bitter", "Pungent"], vata: "=", pitta: "=", kapha: "-", calories: 8, protein: 0.3, carbs: 1.4 },
-  { name: "Mung Dal", category: "Legumes", tastes: ["Sweet", "Astringent"], vata: "=", pitta: "-", kapha: "-", calories: 105, protein: 7, carbs: 19 },
-  { name: "Spinach", category: "Vegetables", tastes: ["Bitter", "Astringent"], vata: "+", pitta: "-", kapha: "-", calories: 7, protein: 0.9, carbs: 1.1 },
-  { name: "Sweet Potato", category: "Vegetables", tastes: ["Sweet"], vata: "-", pitta: "=", kapha: "+", calories: 86, protein: 1.6, carbs: 20 },
-  { name: "Dates", category: "Fruits", tastes: ["Sweet"], vata: "-", pitta: "=", kapha: "+", calories: 66, protein: 0.4, carbs: 18 },
-];
-
-const categories = ["All", "Grains", "Vegetables", "Fruits", "Legumes", "Nuts & Seeds", "Spices", "Fats & Oils", "Main Dishes"];
+const categories = ["All", "Grains", "Vegetables", "Fruits", "Legumes", "Nuts", "Spices", "Fats", "Sweeteners"];
 
 export default function FoodDatabasePage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [foods, setFoods] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
-  const filteredFoods = FOOD_DATABASE.filter(food => {
+  useEffect(() => {
+    fetchFoods();
+  }, []);
+
+  const fetchFoods = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('food_items')
+      .select('*')
+      .order('name');
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to load food items",
+        variant: "destructive",
+      });
+    } else {
+      setFoods(data || []);
+    }
+    setLoading(false);
+  };
+
+  const filteredFoods = foods.filter(food => {
     const matchesSearch = food.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === "All" || food.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
   const getDoshaColor = (effect: string) => {
-    if (effect === "+") return "text-red-500";
-    if (effect === "-") return "text-green-500";
+    if (effect.toLowerCase().includes("increase")) return "text-red-500";
+    if (effect.toLowerCase().includes("decrease")) return "text-green-500";
     return "text-muted-foreground";
   };
 
@@ -46,7 +61,7 @@ export default function FoodDatabasePage() {
           <h1 className="text-3xl font-bold">Food Database</h1>
           <p className="text-muted-foreground">Comprehensive Ayurvedic food properties and nutritional information</p>
         </div>
-        <AddFoodDialog />
+        <AddFoodDialog onFoodAdded={fetchFoods} />
       </div>
 
       <Card>
@@ -77,58 +92,74 @@ export default function FoodDatabasePage() {
         </TabsList>
 
         <TabsContent value={selectedCategory} className="space-y-4 mt-6">
-          <div className="grid gap-4">
-            {filteredFoods.map((food, idx) => (
-              <Card key={idx} className="hover:shadow-wellness transition-all duration-300">
-                <CardContent className="p-6">
-                  <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
-                    <div className="md:col-span-2">
-                      <h3 className="font-semibold text-lg mb-2">{food.name}</h3>
-                      <div className="flex items-center space-x-2 mb-2">
-                        <Badge variant="outline">{food.category}</Badge>
-                        {food.tastes.map(taste => (
-                          <Badge key={taste} variant="secondary" className="text-xs">{taste}</Badge>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Dosha Effects</p>
-                      <div className="flex items-center space-x-3">
-                        <div className="text-center">
-                          <p className="text-xs text-muted-foreground">V</p>
-                          <p className={`font-semibold ${getDoshaColor(food.vata)}`}>{food.vata}</p>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-xs text-muted-foreground">P</p>
-                          <p className={`font-semibold ${getDoshaColor(food.pitta)}`}>{food.pitta}</p>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-xs text-muted-foreground">K</p>
-                          <p className={`font-semibold ${getDoshaColor(food.kapha)}`}>{food.kapha}</p>
+          {loading ? (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">Loading food database...</p>
+            </div>
+          ) : filteredFoods.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">No food items found. Add your first food item to get started.</p>
+            </div>
+          ) : (
+            <div className="grid gap-4">
+              {filteredFoods.map((food) => (
+                <Card key={food.id} className="hover:shadow-wellness transition-all duration-300">
+                  <CardContent className="p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
+                      <div className="md:col-span-2">
+                        <h3 className="font-semibold text-lg mb-2">{food.name}</h3>
+                        <div className="flex items-center space-x-2 mb-2">
+                          <Badge variant="outline">{food.category}</Badge>
+                          {food.taste?.map((taste: string) => (
+                            <Badge key={taste} variant="secondary" className="text-xs">{taste}</Badge>
+                          ))}
                         </div>
                       </div>
-                    </div>
 
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Nutrition (per 100g)</p>
-                      <div className="space-y-1">
-                        <p className="text-sm">Calories: {food.calories}</p>
-                        <p className="text-sm">Protein: {food.protein}g</p>
-                        <p className="text-sm">Carbs: {food.carbs}g</p>
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Dosha Effects</p>
+                        <div className="flex items-center space-x-3">
+                          <div className="text-center">
+                            <p className="text-xs text-muted-foreground">V</p>
+                            <p className={`font-semibold text-xs ${getDoshaColor(food.vata_effect)}`}>
+                              {food.vata_effect?.substring(0, 3)}
+                            </p>
+                          </div>
+                          <div className="text-center">
+                            <p className="text-xs text-muted-foreground">P</p>
+                            <p className={`font-semibold text-xs ${getDoshaColor(food.pitta_effect)}`}>
+                              {food.pitta_effect?.substring(0, 3)}
+                            </p>
+                          </div>
+                          <div className="text-center">
+                            <p className="text-xs text-muted-foreground">K</p>
+                            <p className={`font-semibold text-xs ${getDoshaColor(food.kapha_effect)}`}>
+                              {food.kapha_effect?.substring(0, 3)}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Nutrition (per 100g)</p>
+                        <div className="space-y-1">
+                          <p className="text-sm">Calories: {food.calories_per_100g || 'N/A'}</p>
+                          <p className="text-sm">Protein: {food.protein_g || 'N/A'}g</p>
+                          <p className="text-sm">Carbs: {food.carbs_g || 'N/A'}g</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-end">
+                        <FoodDetailsDialog food={food}>
+                          <Button variant="outline" size="sm">View Details</Button>
+                        </FoodDetailsDialog>
                       </div>
                     </div>
-
-                    <div className="flex items-center justify-end">
-                      <FoodDetailsDialog food={food}>
-                        <Button variant="outline" size="sm">View Details</Button>
-                      </FoodDetailsDialog>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </TabsContent>
       </Tabs>
     </div>
