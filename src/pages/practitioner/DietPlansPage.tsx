@@ -31,7 +31,7 @@ export default function DietPlansPage() {
     setLoading(true);
     const { data, error } = await supabase
       .from('diet_plans')
-      .select('*, patient:patients!diet_plans_patient_id_fkey(*)')
+      .select('*, patient:patients!diet_plans_patient_id_fkey(*), meals:diet_plan_meals(*)')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -41,7 +41,23 @@ export default function DietPlansPage() {
         variant: "destructive",
       });
     } else {
-      setDietPlans(data || []);
+      // Convert meals array to meals object for easier viewing
+      const plansWithMeals = data?.map(plan => {
+        const mealsMap: Record<string, string[]> = {};
+        plan.meals?.forEach((meal: any) => {
+          if (!mealsMap[meal.meal_type]) {
+            mealsMap[meal.meal_type] = [];
+          }
+          if (Array.isArray(meal.food_items)) {
+            mealsMap[meal.meal_type].push(...meal.food_items);
+          }
+        });
+        return {
+          ...plan,
+          meals: mealsMap
+        };
+      });
+      setDietPlans(plansWithMeals || []);
     }
     setLoading(false);
   };
@@ -49,62 +65,81 @@ export default function DietPlansPage() {
   const handleSaveDietPlan = async (dietPlan: any) => {
     if (!selectedPatient?.id || !user) return;
 
-    // Check if we're editing an existing plan
-    if (selectedDietPlan?.id) {
-      // Update existing plan
-      const { error } = await supabase
-        .from('diet_plans')
-        .update({
-          plan_name: dietPlan.planName || "Custom Diet Plan",
-          duration_days: dietPlan.duration || 30,
-          goals: dietPlan.goals || null,
-          notes: dietPlan.notes || null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', selectedDietPlan.id);
+    try {
+      let planId = selectedDietPlan?.id;
 
-      if (error) {
-        toast({
-          title: "Error",
-          description: "Failed to update diet plan",
-          variant: "destructive",
-        });
+      // Check if we're editing an existing plan
+      if (selectedDietPlan?.id) {
+        // Update existing plan
+        const { error } = await supabase
+          .from('diet_plans')
+          .update({
+            plan_name: dietPlan.planName || "Custom Diet Plan",
+            duration_days: dietPlan.duration || 30,
+            goals: dietPlan.goals || null,
+            notes: dietPlan.notes || null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', selectedDietPlan.id);
+
+        if (error) throw error;
+
+        // Delete existing meals
+        await supabase
+          .from('diet_plan_meals')
+          .delete()
+          .eq('diet_plan_id', selectedDietPlan.id);
       } else {
-        toast({
-          title: "Success",
-          description: "Diet plan has been updated successfully"
-        });
-        fetchDietPlans();
-        setView('list');
-        setSelectedPatient(null);
-        setSelectedDietPlan(null);
+        // Create new plan
+        const { data, error } = await supabase
+          .from('diet_plans')
+          .insert({
+            patient_id: selectedPatient.id,
+            practitioner_id: user.id,
+            plan_name: dietPlan.planName || "Custom Diet Plan",
+            duration_days: dietPlan.duration || 30,
+            goals: dietPlan.goals || null,
+            notes: dietPlan.notes || null,
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+        planId = data.id;
       }
-    } else {
-      // Create new plan
-      const { error } = await supabase.from('diet_plans').insert({
-        patient_id: selectedPatient.id,
-        practitioner_id: user.id,
-        plan_name: dietPlan.planName || "Custom Diet Plan",
-        duration_days: dietPlan.duration || 30,
-        goals: dietPlan.goals || null,
-        notes: dietPlan.notes || null,
+
+      // Save meals
+      if (dietPlan.meals && Object.keys(dietPlan.meals).length > 0) {
+        const mealsToInsert = Object.entries(dietPlan.meals).map(([mealType, foods]) => ({
+          diet_plan_id: planId,
+          meal_type: mealType,
+          day_number: 1,
+          food_items: foods,
+        }));
+
+        const { error: mealsError } = await supabase
+          .from('diet_plan_meals')
+          .insert(mealsToInsert);
+
+        if (mealsError) throw mealsError;
+      }
+
+      toast({
+        title: "Success",
+        description: selectedDietPlan?.id ? "Diet plan has been updated successfully" : "Diet plan has been saved successfully"
       });
-
-      if (error) {
-        toast({
-          title: "Error",
-          description: "Failed to save diet plan",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Success",
-          description: "Diet plan has been saved successfully"
-        });
-        fetchDietPlans();
-        setView('list');
-        setSelectedPatient(null);
-      }
+      
+      fetchDietPlans();
+      setView('list');
+      setSelectedPatient(null);
+      setSelectedDietPlan(null);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save diet plan",
+        variant: "destructive",
+      });
+      console.error('Error saving diet plan:', error);
     }
   };
 

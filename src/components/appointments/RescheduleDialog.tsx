@@ -5,6 +5,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface RescheduleDialogProps {
   appointment: any;
@@ -24,11 +25,39 @@ export default function RescheduleDialog({ appointment, open, onOpenChange, onRe
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [time, setTime] = useState<string>("");
 
-  const handleReschedule = () => {
-    if (!date || !time) {
+  const handleReschedule = async () => {
+    if (!date || !time || !appointment?.id) {
       toast({
         title: "Error",
         description: "Please select both date and time",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Parse time and create scheduled_at timestamp
+    const [hours, minutes] = time.split(/[: ]/);
+    const isPM = time.includes('PM');
+    let hour = parseInt(hours);
+    if (isPM && hour !== 12) hour += 12;
+    if (!isPM && hour === 12) hour = 0;
+    
+    const scheduledDateTime = new Date(date);
+    scheduledDateTime.setHours(hour, parseInt(minutes.replace(/[^\d]/g, '')), 0, 0);
+
+    // Update appointment in database
+    const { error } = await supabase
+      .from('appointments')
+      .update({ 
+        scheduled_at: scheduledDateTime.toISOString(),
+        status: 'scheduled'
+      })
+      .eq('id', appointment.id);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to reschedule appointment",
         variant: "destructive"
       });
       return;

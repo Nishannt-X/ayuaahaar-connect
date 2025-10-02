@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Search, X, Camera, Upload, Save, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface DietPlanBuilderProps {
   patient: any;
@@ -39,11 +40,46 @@ const SAMPLE_FOODS = [
 
 export default function DietPlanBuilder({ patient, existingPlan, onSave, onClose }: DietPlanBuilderProps) {
   const { toast } = useToast();
-  const [dietPlan, setDietPlan] = useState<Record<string, string[]>>(existingPlan?.meals || {});
+  const [dietPlan, setDietPlan] = useState<Record<string, string[]>>({});
   const [selectedMeal, setSelectedMeal] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [notes, setNotes] = useState(existingPlan?.notes || "");
   const [uploadedPhoto, setUploadedPhoto] = useState<string | null>(existingPlan?.photo || null);
+  const [planName, setPlanName] = useState(existingPlan?.plan_name || "");
+  const [duration, setDuration] = useState(existingPlan?.duration_days || 30);
+
+  useEffect(() => {
+    if (existingPlan?.id) {
+      loadExistingMeals();
+    }
+  }, [existingPlan]);
+
+  const loadExistingMeals = async () => {
+    if (!existingPlan?.id) return;
+
+    const { data, error } = await supabase
+      .from('diet_plan_meals')
+      .select('*')
+      .eq('diet_plan_id', existingPlan.id);
+
+    if (error) {
+      console.error('Error loading meals:', error);
+      return;
+    }
+
+    // Convert database format to component state format
+    const mealsMap: Record<string, string[]> = {};
+    data?.forEach(meal => {
+      if (!mealsMap[meal.meal_type]) {
+        mealsMap[meal.meal_type] = [];
+      }
+      if (Array.isArray(meal.food_items)) {
+        mealsMap[meal.meal_type].push(...meal.food_items);
+      }
+    });
+
+    setDietPlan(mealsMap);
+  };
 
   const addFoodToMeal = (mealId: string, foodName: string) => {
     setDietPlan(prev => ({
@@ -104,14 +140,12 @@ export default function DietPlanBuilder({ patient, existingPlan, onSave, onClose
   const handleSave = () => {
     onSave({
       patientId: patient.id,
+      planName: planName || "Custom Diet Plan",
+      duration: duration,
       meals: dietPlan,
       notes,
       photo: uploadedPhoto,
       createdAt: new Date().toISOString()
-    });
-    toast({
-      title: "Diet plan saved",
-      description: `Diet plan for ${patient.name} has been saved successfully`
     });
   };
 
@@ -134,6 +168,31 @@ export default function DietPlanBuilder({ patient, existingPlan, onSave, onClose
           </Button>
         </div>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Diet Plan Details</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <label className="text-sm font-medium">Plan Name</label>
+            <Input 
+              value={planName}
+              onChange={(e) => setPlanName(e.target.value)}
+              placeholder="e.g., Weight Loss Plan, Digestive Health Plan"
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium">Duration (days)</label>
+            <Input 
+              type="number"
+              value={duration}
+              onChange={(e) => setDuration(parseInt(e.target.value) || 30)}
+              placeholder="30"
+            />
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
